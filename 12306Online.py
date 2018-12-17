@@ -64,10 +64,11 @@ def create_graph():
 def run_inference_on_image(images, count, add_id = True):
   """Runs inference on an image.
   Args:
-    image: Image file name.
-
+    images: Path to image files.
+    count: number of the images.
+    add_id: whether or not adding label in the returned array
   Returns:
-    Nothing
+    array of logits from different images
   """
   # Creates graph from saved GraphDef.
   predictions_arr = []
