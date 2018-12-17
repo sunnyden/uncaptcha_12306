@@ -27,7 +27,7 @@ import base64
 import json
 import urllib3
 import time
-from fetch_photo import fetch_image
+from fetch_photo import fetch_image_baidu
 from classify import classify
 
 def recog_chinese():
@@ -165,7 +165,7 @@ def main(_):
     crop_image()
     create_graph()
     chinese = recog_chinese()
-    fetch_image(chinese)
+    fetch_image_baidu(chinese)
     img = mpimg.imread('test.jpg')
     plt.imshow(img)
     plt.show()

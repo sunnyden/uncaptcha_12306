@@ -22,3 +22,22 @@ def fetch_image(keyword):
         with open('tmp/%d.jpg' % i,'wb') as img_file:
             img_file.write(img_data.data)
         i += 1
+
+
+def fetch_image_baidu(keyword):
+    key_word = urllib.parse.urlencode({'word': keyword,'queryWord':keyword}, encoding='utf-8')
+    url = "https://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&cl=2&lm=-1" \
+        "&ie=utf-8&oe=utf-8&adpicid=&st=-1&z=&ic=0&s=&se=&tab=&width=&height=&face=0&istype=2&qc=&nc=1&fr=&" \
+            "expermode=&selected_tags=&pn=0&rn=10&gsm=3c&%s" % key_word
+    http = urllib3.PoolManager()
+    photo_search = http.request('GET', url)
+    results = json.loads(str(photo_search.data, encoding='utf-8'))
+    for i in os.listdir("tmp/"): os.remove(os.path.join('tmp/', i))
+    i = 0
+    for result in results['data']:
+        if 'thumbURL' in result:
+            img_url = result['thumbURL']
+            img_data = http.request('GET',img_url)
+            with open('tmp/%d.jpg' % i,'wb') as img_file:
+                img_file.write(img_data.data)
+            i += 1

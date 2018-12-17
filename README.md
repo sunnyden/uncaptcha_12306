@@ -6,7 +6,7 @@ An 12306 automated unCAPTCHA version of implementation
 # Prerequisite
 
 * Computer with Python 3, TensorFlow and related dependencies installed
-* Azure Account (For fetching support set images using [Bing API](https://azure.microsoft.com/en-us/services/cognitive-services/bing-image-search-api/))
+* (Optional) Azure Account (For fetching support set images using [Bing API](https://azure.microsoft.com/en-us/services/cognitive-services/bing-image-search-api/))
 * Baidu Developer Account (For [chinese character recognition](https://ai.baidu.com/tech/ocr))
 
 # Usage
