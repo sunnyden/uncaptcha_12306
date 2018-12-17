@@ -14,6 +14,9 @@ An 12306 automated unCAPTCHA version of implementation
 * Fill your API keys into `fetch_photo.py` and `12306Online.py`.
 * Execute `python3 12306Online.py`
 
+# Screenshot
+![Screenshot](assets/screenshot.png)
+
 # Credits
 
 * TensorFlow Projects
