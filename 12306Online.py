@@ -105,7 +105,7 @@ def getCaptcha():
 
 
 def checkCaptcha(answer, cookies):
-    '''answer: index in picture (i.e. 1, 2, ... 8)'''
+    '''answer: index in picture (i.e. [0, 1, ... 7])'''
 
     def safeGauss(mu, sigma):
         '''return val in [mu - 3 * sigma, mu + 3 * sigma]'''
@@ -120,14 +120,13 @@ def checkCaptcha(answer, cookies):
         '''from index to xy, with some random'''
         xys = []
         for i in answer:
-            i = int(i) - 1
             x = (i % 4) * 72 + 38
             y = (i // 4) * 72 + 44
             xys.append(str(int(safeGauss(x, 6))))
             xys.append(str(int(safeGauss(y, 6))))
         return ','.join(xys)
 
-    answer_xy = indexToXy(answer.split(','))
+    answer_xy = indexToXy(answer)
     r = requests.get('https://kyfw.12306.cn/passport/captcha/captcha-check',
                      params={'answer': answer_xy},
                      cookies=cookies)
@@ -177,10 +176,8 @@ def main(_):
         print(item)
     res = classify(result, result_reference)
     print('Check "test.jpg"')
-    answer = ",".join([str(i+1) for i in res])
     print(chinese)
-    print(answer)
-    (code, msg) = checkCaptcha(answer, cookies)
+    (code, msg) = checkCaptcha(res, cookies)
     if code != 4:
         print('Error #%d: %s' % (code, msg))
     else:
