@@ -1,0 +1,6 @@
+__pycache__/
+*.swp
+.DS_Store
+images/*.jpg
+tmp/*.jpg
+test.jpg
