@@ -26,19 +26,35 @@ import matplotlib.image as mpimg
 import base64
 import json
 import urllib3
+import certifi
 import time
 from fetch_photo import fetch_image_baidu
 from classify import classify
 
-def recog_chinese():
-    http = urllib3.PoolManager()
+_g_access_token = None
+
+def get_baidu_token():
+    global _g_access_token
+    http = urllib3.PoolManager(
+        cert_reqs='CERT_REQUIRED',
+        ca_certs=certifi.where()
+    )
     secret_key = "YOUR_BAIDU_API_SECRET"
     api_key = "YOUR_BAIDU_API_KEY"
     url = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=%s&client_secret=%s" % \
           (api_key, secret_key)
     token_request = http.request('GET', url)
-    access_token = json.loads(str(token_request.data, encoding='utf-8'))['access_token']
-    ocr_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=%s" % access_token
+    _g_access_token = json.loads(str(token_request.data, encoding='utf-8'))['access_token']
+
+
+def recog_chinese():
+    global _g_access_token
+    if _g_access_token is None: get_baidu_token()
+    http = urllib3.PoolManager(
+        cert_reqs='CERT_REQUIRED',
+        ca_certs=certifi.where()
+    )
+    ocr_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=%s" % _g_access_token
     with open("images/label.jpg", "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
     recog = http.request_encode_body('POST', ocr_url, headers={'Content-Type': 'application/x-www-form-urlencoded'},
