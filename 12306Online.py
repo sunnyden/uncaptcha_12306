@@ -91,9 +91,9 @@ def run_inference_on_image(images, count, add_id = True):
   for i in range(count):
       if not tf.gfile.Exists(os.path.join(images,"%d.jpg" % i)):
         tf.logging.fatal('File does not exist %s', os.path.join(images,"%d.jpg" % i))
-      image_data = tf.gfile.FastGFile(os.path.join(images,"%d.jpg" % i), 'rb').read()
       print(os.path.join(images,"%d.jpg" % i))
       with tf.Session() as sess:
+        image_data = tf.gfile.FastGFile(os.path.join(images,"%d.jpg" % i), 'rb').read()
         # Some useful tensors:
         # 'softmax:0': A tensor containing the normalized prediction across
         #   1000 labels.
