@@ -3,6 +3,7 @@ import base64
 import json
 import urllib3
 import urllib.parse
+import certifi
 import time
 import os
 def fetch_image(keyword):
@@ -29,7 +30,10 @@ def fetch_image_baidu(keyword):
     url = "https://image.baidu.com/search/acjson?tn=resultjson_com&ipn=rj&ct=201326592&is=&fp=result&cl=2&lm=-1" \
         "&ie=utf-8&oe=utf-8&adpicid=&st=-1&z=&ic=0&s=&se=&tab=&width=&height=&face=0&istype=2&qc=&nc=1&fr=&" \
             "expermode=&selected_tags=&pn=0&rn=10&gsm=3c&%s" % key_word
-    http = urllib3.PoolManager()
+    http = urllib3.PoolManager(
+        cert_reqs='CERT_REQUIRED',
+        ca_certs=certifi.where()
+    )
     photo_search = http.request('GET', url)
     results = json.loads(str(photo_search.data, encoding='utf-8'))
     for i in os.listdir("tmp/"): os.remove(os.path.join('tmp/', i))

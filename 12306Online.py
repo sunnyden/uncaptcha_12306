@@ -26,19 +26,35 @@ import matplotlib.image as mpimg
 import base64
 import json
 import urllib3
+import certifi
 import time
 from fetch_photo import fetch_image_baidu
 from classify import classify
 
-def recog_chinese():
-    http = urllib3.PoolManager()
+_g_access_token = None
+
+def get_baidu_token():
+    global _g_access_token
+    http = urllib3.PoolManager(
+        cert_reqs='CERT_REQUIRED',
+        ca_certs=certifi.where()
+    )
     secret_key = "YOUR_BAIDU_API_SECRET"
     api_key = "YOUR_BAIDU_API_KEY"
     url = "https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=%s&client_secret=%s" % \
           (api_key, secret_key)
     token_request = http.request('GET', url)
-    access_token = json.loads(str(token_request.data, encoding='utf-8'))['access_token']
-    ocr_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=%s" % access_token
+    _g_access_token = json.loads(str(token_request.data, encoding='utf-8'))['access_token']
+
+
+def recog_chinese():
+    global _g_access_token
+    if _g_access_token is None: get_baidu_token()
+    http = urllib3.PoolManager(
+        cert_reqs='CERT_REQUIRED',
+        ca_certs=certifi.where()
+    )
+    ocr_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic?access_token=%s" % _g_access_token
     with open("images/label.jpg", "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
     recog = http.request_encode_body('POST', ocr_url, headers={'Content-Type': 'application/x-www-form-urlencoded'},
@@ -75,9 +91,9 @@ def run_inference_on_image(images, count, add_id = True):
   for i in range(count):
       if not tf.gfile.Exists(os.path.join(images,"%d.jpg" % i)):
         tf.logging.fatal('File does not exist %s', os.path.join(images,"%d.jpg" % i))
-      image_data = tf.gfile.FastGFile(os.path.join(images,"%d.jpg" % i), 'rb').read()
       print(os.path.join(images,"%d.jpg" % i))
       with tf.Session() as sess:
+        image_data = tf.gfile.FastGFile(os.path.join(images,"%d.jpg" % i), 'rb').read()
         # Some useful tensors:
         # 'softmax:0': A tensor containing the normalized prediction across
         #   1000 labels.
@@ -105,7 +121,7 @@ def getCaptcha():
 
 
 def checkCaptcha(answer, cookies):
-    '''answer: index in picture (i.e. 1, 2, ... 8)'''
+    '''answer: index in picture (i.e. [0, 1, ... 7])'''
 
     def safeGauss(mu, sigma):
         '''return val in [mu - 3 * sigma, mu + 3 * sigma]'''
@@ -120,14 +136,13 @@ def checkCaptcha(answer, cookies):
         '''from index to xy, with some random'''
         xys = []
         for i in answer:
-            i = int(i) - 1
             x = (i % 4) * 72 + 38
             y = (i // 4) * 72 + 44
             xys.append(str(int(safeGauss(x, 6))))
             xys.append(str(int(safeGauss(y, 6))))
         return ','.join(xys)
 
-    answer_xy = indexToXy(answer.split(','))
+    answer_xy = indexToXy(answer)
     r = requests.get('https://kyfw.12306.cn/passport/captcha/captcha-check',
                      params={'answer': answer_xy},
                      cookies=cookies)
@@ -177,10 +192,8 @@ def main(_):
         print(item)
     res = classify(result, result_reference)
     print('Check "test.jpg"')
-    answer = ",".join([str(i+1) for i in res])
     print(chinese)
-    print(answer)
-    (code, msg) = checkCaptcha(answer, cookies)
+    (code, msg) = checkCaptcha(res, cookies)
     if code != 4:
         print('Error #%d: %s' % (code, msg))
     else:
